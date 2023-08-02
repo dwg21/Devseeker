@@ -35,7 +35,7 @@ const PageNavigation = ({ selectedPage, setSelectedPage }) => {
           <li>
             <a
               className={`relative block rounded bg-transparent px-3 py-1.5  text-neutral-600 transition-all duration-300 hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-700 dark:hover:text-white ${
-                selectedPage === page && `bg-neutral-400 `
+                selectedPage === page && `bg-neutral-600 text-white `
               }`}
               href="#"
               onClick={() => setSelectedPage(page)}
@@ -51,7 +51,7 @@ const PageNavigation = ({ selectedPage, setSelectedPage }) => {
             href="#"
             onClick={() => changePageNumbers("next")}
           >
-            >
+            Next
           </a>
         </li>
       </ul>

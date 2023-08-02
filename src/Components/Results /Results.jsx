@@ -5,6 +5,11 @@ import { BsLinkedin } from "react-icons/bs";
 import PageNavigation from "./PageNavigation";
 import JobDetail from "./JobDetail";
 
+// Custom loader
+import Loader from "../Loader";
+
+import SearchBar from "./SearchBar";
+
 // color palate https://huemint.com/brand-intersection/#palette=f4f9ff-001eb3-17478c-a1a6bf
 const testData = [
   {
@@ -149,20 +154,35 @@ const testData = [
   },
 ];
 
-const Home = () => {
-  const [jobResults, setJobResults] = useState([]);
+//  jobsreuslts = {
+//   pagenum :  []
+// }
+
+const Results = () => {
+  const [jobResults, setJobResults] = useState({});
   const [errorState, setErrorState] = useState(null);
-  const [selectedJob, setSelectedJob] = useState(0);
+  const [selectedJob, setSelectedJob] = useState(null);
   const [selectedPage, setSelectedPage] = useState(1);
+  const [loaderActive, setLoaderActive] = useState(true);
 
   // Calls the scrapper - need to put scrapper on backend
   useEffect(() => {
     const fetchJobs = async () => {
+      console.log(selectedPage);
+      if (jobResults[selectedPage] && jobResults[selectedPage].length > 0) {
+        console.log("aca");
+        return;
+      }
       try {
         const jobs = await axios.get(
           `http://localhost:5000/api/v1/scraper?pageNum=${selectedPage}`
         );
-        setJobResults(jobs.data);
+        console.log(jobs.data);
+        setJobResults((prevJobResults) => {
+          const newJobResults = { ...prevJobResults };
+          newJobResults[selectedPage] = jobs.data;
+          return newJobResults;
+        });
       } catch (error) {
         console.error("Error fetching job data:", error);
         setErrorState("Error fetching job data. Please try again later.");
@@ -171,12 +191,12 @@ const Home = () => {
     fetchJobs();
   }, [selectedPage]);
 
-  console.log(jobResults);
+  console.log("jobresults array", jobResults);
   //console.log("selctedjob company", testData[selectedJob]);
   let jobList;
 
-  if (jobResults.length > 1) {
-    jobList = jobResults.map((item, index) => {
+  if (jobResults[selectedPage] && jobResults[selectedPage].length > 0) {
+    jobList = jobResults[selectedPage].map((item, index) => {
       return (
         <div
           className={` ${
@@ -208,18 +228,19 @@ const Home = () => {
 
   return (
     <>
-      {errorState ? (
-        <div className="p-8">
-          <h2 className="text-center text-xl">{errorState}</h2>
-        </div>
-      ) : jobResults && jobResults.length > 0 ? (
-        <div className="h-screen bg-[#f4f9ff]  ">
-          <h1 className=" font-extrabold text-5xl p-8 text-center font-roboto italic ">
-            <span className="font-extrabold text-transparent text-6xl p-3 bg-clip-text bg-gradient-to-r from-[#001eb3] to-black">
-              DEVSEEKER
-            </span>
-          </h1>
+      <h1 className="text-center font-bold text-2xl italic m-2">
+        JOB LISTINGS
+      </h1>
+      <div className="flex justify-center items-center">
+        <SearchBar />
+      </div>
 
+      <div className="h-screen bg-[#f4f9ff]  ">
+        {errorState ? (
+          <div className="p-8">
+            <h2 className="text-center text-xl">{errorState}</h2>
+          </div>
+        ) : jobResults[selectedPage] && jobResults[selectedPage].length > 0 ? (
           <div className="flex gap-6 p-4  ">
             <div
               className={`flex-1  h-[80vh] md:block overflow-y-scroll bg-white ${
@@ -235,30 +256,28 @@ const Home = () => {
               </div>
             </div>
 
-            <div
-              className={`flex-1 h-[80vh] overflow-y-scroll md:block bg-white p-4 rounded-md ${
-                !selectedJob && `hidden`
-              } `}
-            >
-              {jobResults.length > 1 && jobResults[selectedJob] ? (
-                <JobDetail
-                  jobData={jobResults[selectedJob]}
-                  selectedJob={selectedJob}
-                  setSelectedJob={setSelectedJob}
-                />
-              ) : (
-                <div>No job selected</div>
+            {selectedJob &&
+              jobResults[selectedPage] &&
+              jobResults[selectedPage][selectedJob] && (
+                <div
+                  className={`flex-1 h-[80vh] overflow-y-scroll md:block bg-white p-4 rounded-md ${
+                    !selectedJob && `hidden`
+                  } `}
+                >
+                  <JobDetail
+                    jobData={jobResults[selectedPage][selectedJob]}
+                    selectedJob={selectedJob}
+                    setSelectedJob={setSelectedJob}
+                  />
+                </div>
               )}
-            </div>
           </div>
-        </div>
-      ) : (
-        <div className="p-8">
-          <h2 className="text-center text-xl">Loading...</h2>
-        </div>
-      )}
+        ) : (
+          <Loader />
+        )}
+      </div>
     </>
   );
 };
 
-export default Home;
+export default Results;
