@@ -23,7 +23,7 @@ const JobDetail = ({ jobData, setSelectedJob }) => {
           <a href={jobData.link} target="_blank">
             <button
               type="button"
-              class="text-white font-bold bg-gradient-to-r from-[#001eb3] to-black hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 max-w-[250px]"
+              className="text-white font-bold bg-gradient-to-r from-[#001eb3] to-black hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 max-w-[250px]"
             >
               Go to advert
             </button>
@@ -45,7 +45,7 @@ const JobDetail = ({ jobData, setSelectedJob }) => {
           <p>{jobData.description}</p>
         </div>
       ) : (
-        <p>slsl</p>
+        <p>No Job Data Available</p>
       )}
     </div>
   );

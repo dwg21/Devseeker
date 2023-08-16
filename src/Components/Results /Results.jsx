@@ -1,25 +1,26 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-import { BsLinkedin } from "react-icons/bs";
-import { SiIndeed } from "react-icons/si";
 import PageNavigation from "./PageNavigation";
 import JobDetail from "./JobDetail";
 
 // Custom loader
 import Loader from "../Loader";
 
-import SearchBar from "./SearchBar";
+import SearchBar from "../Searchbar/SearchBar";
+import JobList from "./JobList";
 
 // color palate https://huemint.com/brand-intersection/#palette=f4f9ff-001eb3-17478c-a1a6bf
 
-//  jobsreuslts = {
-//   pagenum :  []
-// }
-
 const Results = () => {
-  // Contains all the job data
+  // Contains all the job data unfiltered
   const [jobResults, setJobResults] = useState(null);
+
+  //Contains filtered job data
+  const [filteredJobResults, setFilteredJobResults] = useState(null);
+
+  //filter keyword
+  const [filterKeyword, setFilterKeyword] = useState(null);
 
   const [linkedinData, setLinkedinData] = useState([]);
   const [indeedData, setIndeedData] = useState([]);
@@ -31,14 +32,30 @@ const Results = () => {
   // Sets see more button to loader animation during fetching;
   const [loaderActive, setLoaderActive] = useState(false);
 
+  //Filter results function
+  const filterResults = (searchTerm, includeDescription) => {
+    if (jobResults && jobResults.length > 1) {
+      let filteredResults = jobResults.filter(
+        (result) =>
+          (result.title &&
+            result.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (result.description &&
+            result.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      setFilteredJobResults(filteredResults);
+      console.log("ff", filteredResults);
+    }
+  };
+
+  // useEffect(() => {
+  //   filterResults(filterKeyword);
+  // }, [filterKeyword]);
+
   // Calls the scrapper - need to put scrapper on backend
   useEffect(() => {
     const fetchJobs = async () => {
       console.log(selectedPage);
-      // if (jobResults && jobResults.length > 0) {
-      //   console.log("aca");
-      //   return;
-      // }
+
       try {
         const jobs = await axios.get(
           `http://localhost:5000/api/v1/scraper?pageNum=${selectedPage}`
@@ -48,6 +65,8 @@ const Results = () => {
           `http://localhost:5000/api/v1/scraper/indeed/?pageNum=${selectedPage}`
         );
 
+        console.log(indeedData);
+
         // Function that reformats indeed data to correct format
         let reformatedIndeedData = indeedData.data.map((item) => {
           const {
@@ -55,8 +74,10 @@ const Results = () => {
             "job-link": link,
             "post-date": date,
             "company-location": location,
+            "job-snippet": description,
+            "company-name": company,
           } = item;
-          return { title, link, date, location };
+          return { title, link, date, location, description, company };
         });
 
         //Back end supplies only new page data so add to previous results
@@ -66,16 +87,7 @@ const Results = () => {
         console.log(linkedinData);
         setIndeedData(reformatedIndeedData);
 
-        //LinkedinData
-        //console.log(jobs);
-
-        // Concatenate the job data from both sources
-        // const combinedData = [...linkedinData, ...reformatedIndeedData];
-
-        // console.log(combinedData);
-        // setJobResults(combinedData);
-
-        console.log("jobresults array", jobResults);
+        //console.log("jobresults array", jobResults);
       } catch (error) {
         console.error("Error fetching job data:", error);
         setErrorState("Error fetching job data. Please try again later.");
@@ -92,56 +104,27 @@ const Results = () => {
     console.log(combinedData);
     setJobResults(combinedData);
     setLoaderActive(false);
+
+    //test search functionn
+    //filterResults("developer");
+    console.log("filteredJobResults", filteredJobResults);
   }, [indeedData, linkedinData]);
 
   // console.log("jobresults array", jobResults);
   //console.log("selctedjob company", testData[selectedJob]);
-  let jobList;
-
-  if (jobResults && jobResults.length > 0) {
-    jobList = jobResults.map((item, index) => {
-      return (
-        <div
-          className={` ${
-            selectedJob === index ? `bg-[#a1a6bf]` : `bg-white`
-          } hover:bg-[#a1a6bf] cursor-pointer flex justify-center items-center`}
-        >
-          <div
-            className="border-b-2 p-3 w-[90%] border-black   "
-            onClick={() => setSelectedJob(index)}
-          >
-            <div>
-              <p>{index}</p>
-              <div className="flex justify-left gap-4 items-center mb-2  ">
-                {item.link && item.link.includes("linkedin") ? (
-                  <BsLinkedin className="text-xl text-[#17478c]" />
-                ) : (
-                  <SiIndeed className="text-xl text-[#17478c]" />
-                )}
-
-                <h3 className="font-medium">{item.title}</h3>
-              </div>
-
-              <div className="flex gap-4 font-light">
-                <p> {item.company}</p>
-                <p>{item.location}</p>
-              </div>
-
-              <p>{item.date}</p>
-            </div>
-          </div>
-        </div>
-      );
-    });
-  }
 
   return (
-    <>
-      <h1 className="text-center font-bold text-2xl italic m-2">
+    <div className="px-10 py-4">
+      <h1 className="text-center font-bold text-2xl italic m-2 select-none">
         JOB LISTINGS
       </h1>
-      <div className="flex justify-center items-center">
-        <SearchBar />
+      <div className="flex flex-col gap-3 justify-center items-center">
+        <SearchBar
+          filterKeyword={filterKeyword}
+          setFilterKeyword={setFilterKeyword}
+          filterResults={filterResults}
+        />
+        <p>{filterKeyword && filterKeyword}</p>
       </div>
 
       <div className="h-screen bg-[#f4f9ff]  ">
@@ -156,7 +139,25 @@ const Results = () => {
                 selectedJob && `hidden`
               }`}
             >
-              {jobList}
+              {!filterKeyword
+                ? jobResults.map((item, index) => (
+                    <JobList
+                      item={item}
+                      index={index}
+                      selectedJob={selectedJob}
+                      setSelectedJob={setSelectedJob}
+                    />
+                  ))
+                : filteredJobResults &&
+                  filteredJobResults.length > 0 &&
+                  filteredJobResults.map((item, index) => (
+                    <JobList
+                      item={item}
+                      index={index}
+                      selectedJob={selectedJob}
+                      setSelectedJob={setSelectedJob}
+                    />
+                  ))}
               <div className="m-2 flex items-center justify-center">
                 <PageNavigation
                   selectedPage={selectedPage}
@@ -185,7 +186,7 @@ const Results = () => {
           <Loader />
         )}
       </div>
-    </>
+    </div>
   );
 };
 
