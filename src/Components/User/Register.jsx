@@ -48,7 +48,6 @@ const Register = ({ setshowRegisterPage, showRegisterPage }) => {
           Sign up
         </h1>
         <p className=" text-center text-red-600 py-3">{errMsg && errMsg}</p>
-
         <form className="mt-6">
           <div className="mb-2">
             <label
