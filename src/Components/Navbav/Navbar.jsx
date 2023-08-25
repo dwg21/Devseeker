@@ -1,18 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import Sidebar from "./Sidebar";
+import { UserContext } from "../../context/user";
 
 const Navbar = () => {
-  // return (
-  //   <div className="  ">
-  //     <h1 className=" font-extrabold text-5xl pt-4 text-center font-roboto italic ">
-  //       <span className=" select-none font-extrabold text-transparent text-6xl p-3 bg-clip-text bg-gradient-to-r from-[#001eb3] to-black">
-  //         DEVSEEKER
-  //       </span>
-  //     </h1>
-  //     ;
-  //   </div>
-  // );
-
+  const { user, setUser, token } = useContext(UserContext);
+  //console.log(user, token);
   return (
     <div>
       <div className="pt-0 pr-0 pb-0 pl-0 mt-0 mr-0 mb-0 ml-0"></div>
@@ -26,28 +18,6 @@ const Navbar = () => {
                 </span>
               </div>
               <div className="lg:block mr-auto ml-40 hidden relative max-w-xs">
-                <p className="pl-3 items-center flex absolute inset-y-0 left-0 pointer-events-none">
-                  <span className="justify-center items-center flex">
-                    <span className="justify-center items-center flex">
-                      <span className="items-center justify-center flex">
-                        <svg
-                          className="w-5 h-5 text-gray-400"
-                          fill="none"
-                          viewbox="0 0 24 24"
-                          stroke="currentColor"
-                          stroke-width="2"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M21 21l-6-6m2-5a7 7 0
-                      11-14 0 7 7 0 0114 0z"
-                          />
-                        </svg>
-                      </span>
-                    </span>
-                  </span>
-                </p>
                 <input
                   placeholder="Type to search"
                   type="search"
@@ -119,7 +89,7 @@ const Navbar = () => {
                     className="object-cover btn- h-9 w-9 rounded-full mr-2 bg-gray-300"
                     alt=""
                   />
-                  <p className="font-semibold text-sm">Marrie Currie</p>
+                  <p className="font-semibold text-sm">{user.name}</p>
                 </div>
               </div>
             </div>
